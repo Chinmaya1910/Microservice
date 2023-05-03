@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python main.py'
+    ports:
+      - 8001:5000
+    volumes:
+      - .:/app 
+    depends_on:
+      - db
+  migration:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: 'python manager.py db upgrade'
+    depends_on:
+      - db
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python -u consumer.py'
+    depends_on:
+      - db
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_HOST: localhost
+    volumes:
+      - .dbdata:/var/lib/postgres
+    ports:
+      - 5456:5432

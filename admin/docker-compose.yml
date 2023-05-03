@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile 
+    command: 'python manage.py runserver 0.0.0.0:8000'
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+  migration:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: 'python manage.py migrate'
+    depends_on:
+      - db
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python consumer.py'
+    depends_on:
+      - db
+
+  # redis:
+  #   image: redis:7-alpine
+  # celery:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   image: django_celery_example_celery_worker
+  #   command: 'celery -A admin worker -l INFO'
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     - redis
+  #     - db
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: Chinu1620@
+      POSTGRES_USER: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_HOST: localhost
+    volumes:
+      - .dbdata:/var/lib/postgres
+    ports:
+      - 5455:5432
